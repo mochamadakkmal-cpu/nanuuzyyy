@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  role          Role      @default(USER)
+  password      String?
+  googleId      String?
+  avatar        String?
+  phone         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  packageId       String
+  packageName     String
+  platform        String
+  targetUrl       String
+  targetUsername  String
+  quantity        Int
+  price           Float
+  status          OrderStatus @default(PENDING)
+  resellerApiUrl  String?
+  resellerOrderId String?
+  notes           String?
+  serviceId       String?
+  service         Service?   @relation(fields: [serviceId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Package {
+  id          String  @id @default(cuid())
+  name        String
+  platform    String
+  quantity    Int
+  price       Float
+  description String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  category      String
+  minQuantity   Int
+  maxQuantity   Int
+  basePrice     Float
+  isActive      Boolean   @default(true)
+  providerName  String?
+  serviceId     String?
+  apiKey        String?
+  apiEndpoint   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
